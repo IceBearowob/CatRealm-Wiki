@@ -1,0 +1,47 @@
+# 專案架構與內部討論紀錄 (不公開推送到 Wiki 倉庫)
+ARCHITECTURE.md
+
+# Node 依賴與套件管理
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# VitePress / 前端構建產物與快取
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+.vitepress/dist/
+.vitepress/cache/
+dist/
+build/
+.cache/
+.temp/
+
+# 環境變數與機密資訊
+.env
+.env.*
+catrealm resourcepack/
+
+# 作業系統產生的檔案
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# 編輯器與 IDE 設定檔
+.vscode/*
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+*.tmp

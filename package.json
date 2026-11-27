@@ -1,0 +1,22 @@
+{
+  "name": "catrealm-wiki",
+  "version": "1.0.0",
+  "description": "貓域伺服器 (CatRealm) 非官方 Wiki",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "keywords": [
+    "catrealm",
+    "minecraft",
+    "wiki",
+    "vitepress"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "vitepress": "^1.6.3"
+  }
+}

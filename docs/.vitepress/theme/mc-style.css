@@ -1,0 +1,8 @@
+/* 全站樣式覆寫 */
+
+/* 徹底隱藏頁面底部的上一頁 / 下一頁導航框 */
+.VPDocFooter .prev-next,
+.VPDocFooter .pager,
+.pager-link {
+  display: none !important;
+}
