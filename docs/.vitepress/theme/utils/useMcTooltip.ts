@@ -42,7 +42,7 @@ export function useMcTooltip() {
     mediaQueryList = null
   })
 
-  async function showTooltip(event: MouseEvent, title: string, lore: string) {
+  async function showTooltip(event: MouseEvent, title: string, lore = '') {
     if (isMobileView.value) return
 
     const target = event.currentTarget as HTMLElement | null

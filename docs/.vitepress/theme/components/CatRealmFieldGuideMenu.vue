@@ -24,7 +24,7 @@
             width: (18 / 176 * 100) + '%',
             height: (18 / 54 * 100) + '%'
           }"
-          @mouseenter="showTooltip($event, tab.name, tab.lore)"
+          @mouseenter="showTooltip($event, tab.name)"
           @mouseleave="hideTooltip"
           @click="onTabClick($event, tab, idx)"
         >
@@ -40,7 +40,6 @@
           <div class="mc-detail-title" v-html="formatMinecraftText(selectedTab.name)"></div>
           <button type="button" class="mc-detail-close" aria-label="關閉詳情" @click="selectedIdx = null">✕</button>
         </div>
-        <div v-if="selectedTab.lore" class="mc-detail-lore" v-html="formatMinecraftText(selectedTab.lore)"></div>
         <div v-if="selectedTab.link" class="mc-detail-actions">
           <a :href="withBase(selectedTab.link)" class="mc-detail-action">
             進入 {{ selectedTab.rawName }} →
@@ -48,7 +47,7 @@
         </div>
       </div>
       <div v-else-if="isMobileView" class="mc-mobile-hint">
-        點擊上方圖示查看各圖鑑分類說明
+        點擊上方圖示查看分類，再次點擊已開放項目即可進入
       </div>
     </div>
 
@@ -60,7 +59,6 @@
       :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
     >
       <div class="tooltip-title" v-html="formatMinecraftText(tooltip.title)"></div>
-      <div v-if="tooltip.lore" class="tooltip-lore" v-html="formatMinecraftText(tooltip.lore)"></div>
     </div>
   </div>
 </template>
@@ -74,57 +72,50 @@ import { useMcTooltip } from '../utils/useMcTooltip'
 const tabs = ref([
   {
     rawName: '生物圖鑑',
-    name: '&a生物圖鑑',
-    lore: '&7遇見後解鎖\n&8收集世界各地遇見的生物與怪物進度\n&8尚未開放',
-    icon: '/textures/item/menu/field_guide/creature.png',
+    name: '&f生物圖鑑',
+    icon: '/textures/item/menu/field_guide/creature_complete.png',
     link: '',
     active: false
   },
   {
     rawName: '素材圖鑑',
-    name: '&b素材圖鑑',
-    lore: '&7拿到後解鎖\n&8探索並收集各種珍貴礦石與原物料\n&8尚未開放',
-    icon: '/textures/item/menu/field_guide/material.png',
+    name: '&f素材圖鑑',
+    icon: '/textures/item/menu/field_guide/material_complete.png',
     link: '',
     active: false
   },
   {
     rawName: '食譜圖鑑',
-    name: '&d食譜圖鑑',
-    lore: '&7吃下或喝下後解鎖\n&8品嚐並記錄貓域獨特的美食與佳釀\n&8尚未開放',
-    icon: '/textures/item/menu/field_guide/recipe.png',
+    name: '&f食譜圖鑑',
+    icon: '/textures/item/menu/field_guide/recipe_complete.png',
     link: '',
     active: false
   },
   {
     rawName: '突破圖鑑',
-    name: '&6突破圖鑑',
-    lore: '&a可突破附魔石與精煉板\n&7查看所有可突破裝備、數值與附魔效果\n&e【點擊進入】突破圖鑑子頁面',
-    icon: '/textures/item/menu/field_guide/enchant.png',
+    name: '&f突破圖鑑',
+    icon: '/textures/item/menu/field_guide/enchant_complete.png',
     link: '/guide/enchant',
     active: true
   },
   {
     rawName: '飾品圖鑑',
-    name: '&e飾品圖鑑',
-    lore: '&7拿到後解鎖\n&8收集特殊功能飾品與被動強化道具\n&8尚未開放',
-    icon: '/textures/item/menu/field_guide/accessory.png',
+    name: '&f飾品圖鑑',
+    icon: '/textures/item/menu/field_guide/accessory_complete.png',
     link: '',
     active: false
   },
   {
     rawName: '玩偶圖鑑',
-    name: '&c玩偶圖鑑',
-    lore: '&7拿到後解鎖\n&8珍藏各式各樣可愛的吉祥物與生物玩偶\n&8尚未開放',
-    icon: '/textures/item/menu/field_guide/plush.png',
+    name: '&f玩偶圖鑑',
+    icon: '/textures/item/menu/field_guide/plush_complete.png',
     link: '',
     active: false
   },
   {
     rawName: '空島圖鑑',
-    name: '&a空島圖鑑',
-    lore: '&a56 種生態域空島\n&7踏上後解鎖，記錄空島世界中踏足的生態域\n&e【點擊進入】空島圖鑑子頁面',
-    icon: '/textures/item/menu/field_guide/island.png',
+    name: '&f空島圖鑑',
+    icon: '/textures/item/menu/field_guide/island_complete.png',
     link: '/guide/island',
     active: true
   }
@@ -211,7 +202,7 @@ function onTabClick(event: MouseEvent, tab: (typeof tabs.value)[number], idx: nu
 
 .mc-slot-highlight {
   position: absolute;
-  inset: 1px;
+  inset: calc(1 / 18 * 100%);
   background-color: rgba(255, 255, 255, 0.45);
   opacity: 0;
   transition: opacity 0.05s ease-in-out;
@@ -220,24 +211,17 @@ function onTabClick(event: MouseEvent, tab: (typeof tabs.value)[number], idx: nu
 }
 
 .mc-slot-icon {
-  width: 80%;
-  height: 80%;
-  max-width: 32px;
-  max-height: 32px;
+  width: calc(16 / 18 * 100%);
+  height: calc(16 / 18 * 100%);
   object-fit: contain;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   z-index: 1;
-  transition: transform 0.1s ease;
 }
 
 @media (hover: hover) {
-  .mc-tab-slot.clickable:hover .mc-slot-highlight {
+  .mc-tab-slot:hover .mc-slot-highlight {
     opacity: 1;
-  }
-
-  .mc-tab-slot.clickable:hover .mc-slot-icon {
-    transform: scale(1.1);
   }
 }
 
