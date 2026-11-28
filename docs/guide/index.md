@@ -20,7 +20,7 @@
 | <img src="/textures/item/menu/field_guide/enchant.png" width="24" style="image-rendering:pixelated;display:inline" /> | **[突破圖鑑](./enchant.md)** | 收錄附魔突破台、16 種裝備精煉板與 28 種特色自訂附魔石 | **🔥 完整開放** |
 | <img src="/textures/item/menu/field_guide/accessory.png" width="24" style="image-rendering:pixelated;display:inline" /> | **飾品圖鑑** | 拿到後解鎖，收集擁有被動增益的特殊護身符與法寶飾品 | 即將開放 |
 | <img src="/textures/item/menu/field_guide/plush.png" width="24" style="image-rendering:pixelated;display:inline" /> | **玩偶圖鑑** | 拿到後解鎖，珍藏各式超萌吉祥物玩偶與紀念玩偶 | 即將開放 |
-| <img src="/textures/item/menu/field_guide/island.png" width="24" style="image-rendering:pixelated;display:inline" /> | **空島圖鑑** | 踏上後解鎖，記錄空島冒險世界中已踏足的地形與秘境島嶼 | 即將開放 |
+| <img src="/textures/item/menu/field_guide/island.png" width="24" style="image-rendering:pixelated;display:inline" /> | **[空島圖鑑](./island.md)** | 踏上後解鎖，收錄主世界、地獄與終界共 56 種生態域空島 | **🔥 完整開放** |
 
 > [!TIP] 圖鑑使用小撇步
 > - 只要在遊戲中遇見生物、採集素材、食用料理、突破裝備、取得飾品玩偶或踏上未知島嶼，圖鑑條目就會自動記錄並解鎖！

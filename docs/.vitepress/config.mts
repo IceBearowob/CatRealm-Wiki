@@ -13,8 +13,7 @@ export default defineConfig({
     'guide/material.md',
     'guide/recipe.md',
     'guide/accessory.md',
-    'guide/plush.md',
-    'guide/island.md'
+    'guide/plush.md'
   ],
   themeConfig: {
     // 頂部導覽列（暫時隱藏）
@@ -44,13 +43,13 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '圖鑑系統總覽', link: '/guide/index' },
-          { text: '突破圖鑑', link: '/guide/enchant' }
+          { text: '突破圖鑑', link: '/guide/enchant' },
           // { text: '生物圖鑑', link: '/guide/creature' },
           // { text: '素材圖鑑', link: '/guide/material' },
           // { text: '食譜圖鑑', link: '/guide/recipe' },
           // { text: '飾品圖鑑', link: '/guide/accessory' },
           // { text: '玩偶圖鑑', link: '/guide/plush' },
-          // { text: '空島圖鑑', link: '/guide/island' }
+          { text: '空島圖鑑', link: '/guide/island' }
         ]
       }
       // 尚未實作的分類暫時屏蔽

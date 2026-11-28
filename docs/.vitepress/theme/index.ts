@@ -4,6 +4,7 @@ import CatRealmMenu from './components/CatRealmMenu.vue'
 import CatRealmFieldGuideMenu from './components/CatRealmFieldGuideMenu.vue'
 import CatRealmFieldGuideGrid from './components/CatRealmFieldGuideGrid.vue'
 import CatRealmBreakthroughGuide from './components/CatRealmBreakthroughGuide.vue'
+import CatRealmIslandGuide from './components/CatRealmIslandGuide.vue'
 import type { Theme } from 'vitepress'
 
 export default {
@@ -14,5 +15,6 @@ export default {
     app.component('CatRealmFieldGuideMenu', CatRealmFieldGuideMenu)
     app.component('CatRealmFieldGuideGrid', CatRealmFieldGuideGrid)
     app.component('CatRealmBreakthroughGuide', CatRealmBreakthroughGuide)
+    app.component('CatRealmIslandGuide', CatRealmIslandGuide)
   }
 } satisfies Theme

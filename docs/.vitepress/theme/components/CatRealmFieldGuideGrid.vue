@@ -55,6 +55,7 @@
 
         <!-- 底部功能列：問號說明按鈕 -->
         <div 
+          v-if="helpTitle || helpLore"
           class="mc-pos-item mc-ctrl-btn mc-help-btn"
           :style="{
             left: (80 / 176 * 100) + '%',
@@ -134,7 +135,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
 import { withBase } from 'vitepress'
-import type { FieldGuideItem } from '../data/breakthroughData'
+import type { FieldGuideItem } from '../data/types'
 
 const props = withDefaults(defineProps<{
   bg?: string
@@ -149,8 +150,8 @@ const props = withDefaults(defineProps<{
   tabIcon: '',
   pages: undefined,
   items: () => [],
-  helpTitle: '&e圖鑑操作說明',
-  helpLore: '&7滑鼠懸浮物品可查看數值與效果\n&7點擊可快速跳轉至下方詳細解說\n&a支援多頁翻頁瀏覽！',
+  helpTitle: '',
+  helpLore: '',
   initialPage: 1
 })
 

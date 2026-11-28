@@ -96,10 +96,10 @@ const tabs = ref([
   {
     rawName: '空島圖鑑',
     name: '&a空島圖鑑',
-    lore: '&7踏上後解鎖\n&8記錄在空島世界中踏足的每一個島嶼\n&8尚未開放',
+    lore: '&a56 種生態域空島\n&7踏上後解鎖，記錄空島世界中踏足的生態域\n&e【點擊進入】空島圖鑑子頁面',
     icon: '/textures/item/menu/field_guide/island.png',
-    link: '',
-    active: false
+    link: '/guide/island',
+    active: true
   }
 ])
 
