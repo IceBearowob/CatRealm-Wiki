@@ -28,7 +28,8 @@
             class="mc-pos-item mc-grid-slot"
             :class="{ 
               hasItem: !!getItem(row - 1, col - 1),
-              clickable: !!(getItem(row - 1, col - 1)?.anchor || getItem(row - 1, col - 1)?.link)
+              clickable: !!(getItem(row - 1, col - 1)?.anchor || getItem(row - 1, col - 1)?.link),
+              selected: isMobileView && selectedDetail?.key === `slot-${row}-${col}`
             }"
             :style="{
               left: ((7 + (col - 1) * 18) / 176 * 100) + '%',
@@ -38,7 +39,7 @@
             }"
             @mouseenter="onSlotEnter($event, getItem(row - 1, col - 1))"
             @mouseleave="hideTooltip"
-            @click="onSlotClick(getItem(row - 1, col - 1))"
+            @click="onSlotClick(row, col, getItem(row - 1, col - 1))"
           >
             <!-- 槽位懸浮高亮框 -->
             <div class="mc-slot-highlight"></div>
@@ -57,6 +58,7 @@
         <div 
           v-if="helpTitle || helpLore"
           class="mc-pos-item mc-ctrl-btn mc-help-btn"
+          :class="{ selected: isMobileView && selectedDetail?.key === 'help' }"
           :style="{
             left: (80 / 176 * 100) + '%',
             top: (119 / 144 * 100) + '%',
@@ -65,6 +67,7 @@
           }"
           @mouseenter="showTooltip($event, helpTitle, formatHelpLore())"
           @mouseleave="hideTooltip"
+          @click="onHelpClick"
         >
           <img :src="withBase('/textures/item/menu/question.png')" alt="Help" class="mc-pixel-icon" />
         </div>
@@ -112,6 +115,32 @@
         </div>
       </div>
 
+      <!-- 手機版點擊詳情卡 / 操作提示 -->
+      <div v-if="isMobileView && selectedDetail" class="mc-mobile-detail-card">
+        <div class="mc-detail-header">
+          <img :src="withBase(selectedDetail.icon)" :alt="selectedDetail.rawName" class="mc-detail-icon" />
+          <div class="mc-detail-title" v-html="formatMinecraftText(selectedDetail.title)"></div>
+          <button type="button" class="mc-detail-close" aria-label="關閉詳情" @click="selectedDetail = null">✕</button>
+        </div>
+        <div v-if="selectedDetail.lore" class="mc-detail-lore" v-html="formatMinecraftText(selectedDetail.lore)"></div>
+        <div v-if="selectedDetail.link || hasAnchorTarget(selectedDetail.anchor)" class="mc-detail-actions">
+          <a v-if="selectedDetail.link" :href="withBase(selectedDetail.link)" class="mc-detail-action">
+            前往頁面 →
+          </a>
+          <button
+            v-else-if="hasAnchorTarget(selectedDetail.anchor)"
+            type="button"
+            class="mc-detail-action"
+            @click="scrollToAnchor(selectedDetail.anchor)"
+          >
+            跳至詳細說明 ↓
+          </button>
+        </div>
+      </div>
+      <div v-else-if="isMobileView" class="mc-mobile-hint">
+        點擊圖鑑格子查看詳細資訊
+      </div>
+
       <!-- 頁數標籤指示器 -->
       <div class="mc-page-indicator">
         <span class="page-badge">第 {{ currentPage }} / {{ totalPages }} 頁</span>
@@ -123,7 +152,7 @@
     <div 
       ref="tooltipRef"
       class="mc-floating-tooltip"
-      :class="{ visible: tooltip.visible }"
+      :class="{ visible: tooltip.visible, 'placement-bottom': tooltip.placement === 'bottom' }"
       :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
     >
       <div class="tooltip-title" v-html="formatMinecraftText(tooltip.title)"></div>
@@ -133,9 +162,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch } from 'vue'
-import { withBase } from 'vitepress'
+import { computed, ref, watch } from 'vue'
+import { useRouter, withBase } from 'vitepress'
 import type { FieldGuideItem } from '../data/types'
+import { formatMinecraftText } from '../utils/minecraftText'
+import { useMcTooltip } from '../utils/useMcTooltip'
+
+interface SelectedDetail {
+  key: string
+  icon: string
+  rawName: string
+  title: string
+  lore: string
+  link?: string
+  anchor?: string
+}
 
 const props = withDefaults(defineProps<{
   bg?: string
@@ -155,7 +196,17 @@ const props = withDefaults(defineProps<{
   initialPage: 1
 })
 
+const router = useRouter()
+const { tooltipRef, tooltip, isMobileView, showTooltip, hideTooltip } = useMcTooltip()
+
 const currentPage = ref(props.initialPage)
+const selectedDetail = ref<SelectedDetail | null>(null)
+
+watch(isMobileView, (mobile) => {
+  if (!mobile) {
+    selectedDetail.value = null
+  }
+})
 
 // 計算所有分頁清單
 const computedPages = computed<FieldGuideItem[][]>(() => {
@@ -190,6 +241,7 @@ function getItem(row: number, col: number): FieldGuideItem | undefined {
 function prevPage() {
   if (currentPage.value > 1) {
     currentPage.value--
+    selectedDetail.value = null
     hideTooltip()
   }
 }
@@ -197,6 +249,7 @@ function prevPage() {
 function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
+    selectedDetail.value = null
     hideTooltip()
   }
 }
@@ -205,32 +258,63 @@ function formatHelpLore(): string {
   return `${props.helpLore}\n&b當前頁數：&f第 ${currentPage.value} / ${totalPages.value} 頁`
 }
 
-// 點擊物品跳轉頁面或錨點
-function onSlotClick(item?: FieldGuideItem) {
-  if (!item) return
-  if (item.link) {
-    window.location.href = withBase(item.link)
-    return
-  }
-  if (item.anchor) {
-    const el = document.getElementById(item.anchor)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      el.classList.add('mc-highlight-target')
-      setTimeout(() => el.classList.remove('mc-highlight-target'), 2000)
-    }
+function hasAnchorTarget(anchor?: string): boolean {
+  return Boolean(anchor && typeof document !== 'undefined' && document.getElementById(anchor))
+}
+
+function scrollToAnchor(anchor?: string) {
+  if (!anchor || typeof document === 'undefined') return
+  const el = document.getElementById(anchor)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    el.classList.add('mc-highlight-target')
+    setTimeout(() => el.classList.remove('mc-highlight-target'), 2000)
   }
 }
 
-// Tooltip 邏輯
-const tooltipRef = ref<HTMLElement | null>(null)
-const tooltip = reactive({
-  visible: false,
-  x: 0,
-  y: 0,
-  title: '',
-  lore: ''
-})
+function onHelpClick() {
+  if (!isMobileView.value) return
+  selectedDetail.value = {
+    key: 'help',
+    icon: '/textures/item/menu/question.png',
+    rawName: '說明',
+    title: props.helpTitle || '&e圖鑑說明',
+    lore: formatHelpLore()
+  }
+}
+
+// 點擊物品：手機顯示詳情卡，桌機跳轉頁面或錨點
+function onSlotClick(row: number, col: number, item?: FieldGuideItem) {
+  if (!item) {
+    selectedDetail.value = null
+    return
+  }
+
+  if (isMobileView.value) {
+    selectedDetail.value = {
+      key: `slot-${row}-${col}`,
+      icon: item.icon,
+      rawName: item.rawName,
+      title: item.name,
+      lore: item.lore,
+      link: item.link,
+      anchor: item.anchor
+    }
+    return
+  }
+
+  if (item.link) {
+    if (/^https?:\/\//.test(item.link)) {
+      window.location.href = item.link
+    } else {
+      router.go(withBase(item.link))
+    }
+    return
+  }
+  if (item.anchor) {
+    scrollToAnchor(item.anchor)
+  }
+}
 
 function onSlotEnter(event: MouseEvent, item?: FieldGuideItem) {
   if (!item) {
@@ -239,52 +323,11 @@ function onSlotEnter(event: MouseEvent, item?: FieldGuideItem) {
   }
   showTooltip(event, item.name, item.lore)
 }
-
-function showTooltip(event: MouseEvent, title: string, lore: string) {
-  tooltip.title = title
-  tooltip.lore = lore
-  tooltip.visible = true
-
-  const target = event.currentTarget as HTMLElement
-  const rect = target.getBoundingClientRect()
-  tooltip.x = rect.left + rect.width / 2
-  tooltip.y = rect.top - 8
-}
-
-function hideTooltip() {
-  tooltip.visible = false
-}
-
-function formatMinecraftText(text: string): string {
-  if (!text) return ''
-  const colorMap: Record<string, string> = {
-    '0': '#000000', '1': '#0000aa', '2': '#00aa00', '3': '#00aaaa',
-    '4': '#aa0000', '5': '#aa00aa', '6': '#ffaa00', '7': '#aaaaaa',
-    '8': '#555555', '9': '#5555ff', 'a': '#55ff55', 'b': '#55ffff',
-    'c': '#ff5555', 'd': '#ff55ff', 'e': '#ffff55', 'f': '#ffffff'
-  }
-
-  let formatted = text.replace(/&([0-9a-fk-or])/gi, (_, code) => {
-    const c = code.toLowerCase()
-    if (colorMap[c]) {
-      return `</span><span style="color: ${colorMap[c]}">`
-    } else if (c === 'l') {
-      return `<span style="font-weight: bold">`
-    } else if (c === 'o') {
-      return `<span style="font-style: italic">`
-    } else if (c === 'r') {
-      return `</span><span style="color: #ffffff">`
-    }
-    return ''
-  })
-
-  formatted = formatted.replace(/\n/g, '<br/>')
-  return `<span>${formatted}</span>`
-}
 </script>
 
 <style scoped>
 .mc-gui-wrapper {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -293,6 +336,8 @@ function formatMinecraftText(text: string): string {
 }
 
 .mc-field-guide-container {
+  width: 100%;
+  max-width: 528px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -301,8 +346,10 @@ function formatMinecraftText(text: string): string {
 /* 核心畫布：176x144, 3倍放大 (528x432) */
 .mc-grid-canvas {
   position: relative;
-  width: 528px;
-  height: 432px;
+  width: 100%;
+  max-width: 528px;
+  height: auto;
+  aspect-ratio: 176 / 144;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   image-rendering: pixelated;
@@ -327,8 +374,10 @@ function formatMinecraftText(text: string): string {
   cursor: pointer;
 }
 
-.mc-grid-slot:hover .mc-slot-highlight {
+.mc-grid-slot.selected .mc-slot-highlight {
   opacity: 1;
+  background-color: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 0 0 2px #ffaa00;
 }
 
 .mc-slot-highlight {
@@ -342,16 +391,22 @@ function formatMinecraftText(text: string): string {
 }
 
 .mc-pixel-icon {
-  width: 32px;
-  height: 32px;
+  width: 80%;
+  height: 80%;
+  max-width: 32px;
+  max-height: 32px;
+  object-fit: contain;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   z-index: 1;
 }
 
-.mc-grid-slot:hover .mc-pixel-icon {
-  transform: scale(1.1);
-  transition: transform 0.1s ease;
+.mc-ctrl-btn .mc-pixel-icon,
+.mc-tab-icon .mc-pixel-icon {
+  width: 85%;
+  height: 85%;
+  max-width: 32px;
+  max-height: 32px;
 }
 
 /* 控制按鈕 (問號、箭頭) */
@@ -360,8 +415,8 @@ function formatMinecraftText(text: string): string {
   transition: transform 0.1s ease;
 }
 
-.mc-ctrl-btn:hover:not(.disabled) {
-  transform: scale(1.15);
+.mc-help-btn.selected {
+  transform: scale(1.1);
 }
 
 .mc-ctrl-btn.disabled {
@@ -369,9 +424,32 @@ function formatMinecraftText(text: string): string {
   opacity: 0.8;
 }
 
+@media (hover: hover) {
+  .mc-grid-slot:hover .mc-slot-highlight {
+    opacity: 1;
+  }
+
+  .mc-grid-slot:hover .mc-pixel-icon {
+    transform: scale(1.1);
+    transition: transform 0.1s ease;
+  }
+
+  .mc-ctrl-btn:hover:not(.disabled) {
+    transform: scale(1.15);
+  }
+}
+
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  .mc-grid-slot.hasItem {
+    cursor: pointer;
+  }
+}
+
 /* 頁數指示器 */
 .mc-page-indicator {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
@@ -391,44 +469,6 @@ function formatMinecraftText(text: string): string {
 .slot-count {
   font-size: 12px;
   color: var(--vp-c-text-3);
-}
-
-/* Minecraft 經典 Tooltip */
-.mc-floating-tooltip {
-  position: fixed;
-  z-index: 9999;
-  pointer-events: none;
-  transform: translate(-50%, -100%);
-  background: #100010;
-  border: 2px solid;
-  border-image-slice: 1;
-  border-color: #2b0854 #18002d #18002d #2b0854;
-  box-shadow: inset 0 0 0 1px #5000ff, 0 4px 12px rgba(0,0,0,0.7);
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-family: 'Minecraft', 'Unifont', monospace, sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.1s ease;
-}
-
-.mc-floating-tooltip.visible {
-  opacity: 1;
-}
-
-.tooltip-title {
-  font-size: 14px;
-  font-weight: normal;
-  text-shadow: 2px 2px 0px #3f3f3f;
-  margin-bottom: 4px;
-}
-
-.tooltip-lore {
-  font-size: 14px;
-  line-height: 1.45;
-  text-shadow: 2px 2px 0px #3f3f3f;
 }
 
 :global(.mc-highlight-target) {

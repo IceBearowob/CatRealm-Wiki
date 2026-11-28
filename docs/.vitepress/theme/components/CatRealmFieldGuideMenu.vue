@@ -1,37 +1,62 @@
 <template>
   <div class="mc-gui-wrapper">
-    <!-- 圖鑑主選單畫布：以 176x54 field_guide.png 作為背景 (3倍像素 528x162) -->
-    <div 
-      class="mc-fg-canvas"
-      :style="{ backgroundImage: `url(${withBase('/textures/gui/field_guide.png')})` }"
-    >
-      <!-- 7 個圖鑑分類槽位 (y: 23px, 每格 18x18, 從 x: 25px 開始) -->
-      <component
-        :is="tab.link ? 'a' : 'div'"
-        v-for="(tab, idx) in tabs"
-        :key="idx"
-        :href="tab.link ? withBase(tab.link) : undefined"
-        class="mc-pos-item mc-tab-slot"
-        :class="{ active: tab.active, clickable: !!tab.link }"
-        :style="{
-          left: ((25 + idx * 18) / 176 * 100) + '%',
-          top: (23 / 54 * 100) + '%',
-          width: (18 / 176 * 100) + '%',
-          height: (18 / 54 * 100) + '%'
-        }"
-        @mouseenter="showTooltip($event, tab.name, tab.lore)"
-        @mouseleave="hideTooltip"
+    <div class="mc-fg-container">
+      <!-- 圖鑑主選單畫布：以 176x54 field_guide.png 作為背景 (3倍像素 528x162) -->
+      <div 
+        class="mc-fg-canvas"
+        :style="{ backgroundImage: `url(${withBase('/textures/gui/field_guide.png')})` }"
       >
-        <div class="mc-slot-highlight"></div>
-        <img :src="withBase(tab.icon)" :alt="tab.rawName" class="mc-slot-icon" />
-      </component>
+        <!-- 7 個圖鑑分類槽位 (y: 23px, 每格 18x18, 從 x: 25px 開始) -->
+        <component
+          :is="tab.link ? 'a' : 'div'"
+          v-for="(tab, idx) in tabs"
+          :key="idx"
+          :href="tab.link ? withBase(tab.link) : undefined"
+          class="mc-pos-item mc-tab-slot"
+          :class="{
+            active: tab.active,
+            clickable: !!tab.link,
+            selected: isMobileView && selectedIdx === idx
+          }"
+          :style="{
+            left: ((25 + idx * 18) / 176 * 100) + '%',
+            top: (23 / 54 * 100) + '%',
+            width: (18 / 176 * 100) + '%',
+            height: (18 / 54 * 100) + '%'
+          }"
+          @mouseenter="showTooltip($event, tab.name, tab.lore)"
+          @mouseleave="hideTooltip"
+          @click="onTabClick($event, tab, idx)"
+        >
+          <div class="mc-slot-highlight"></div>
+          <img :src="withBase(tab.icon)" :alt="tab.rawName" class="mc-slot-icon" />
+        </component>
+      </div>
+
+      <!-- 手機版點擊詳情卡 / 操作提示 -->
+      <div v-if="isMobileView && selectedTab" class="mc-mobile-detail-card">
+        <div class="mc-detail-header">
+          <img :src="withBase(selectedTab.icon)" :alt="selectedTab.rawName" class="mc-detail-icon" />
+          <div class="mc-detail-title" v-html="formatMinecraftText(selectedTab.name)"></div>
+          <button type="button" class="mc-detail-close" aria-label="關閉詳情" @click="selectedIdx = null">✕</button>
+        </div>
+        <div v-if="selectedTab.lore" class="mc-detail-lore" v-html="formatMinecraftText(selectedTab.lore)"></div>
+        <div v-if="selectedTab.link" class="mc-detail-actions">
+          <a :href="withBase(selectedTab.link)" class="mc-detail-action">
+            進入 {{ selectedTab.rawName }} →
+          </a>
+        </div>
+      </div>
+      <div v-else-if="isMobileView" class="mc-mobile-hint">
+        點擊上方圖示查看各圖鑑分類說明
+      </div>
     </div>
 
     <!-- Minecraft 經典黑紫 Tooltip 懸浮窗 -->
     <div 
       ref="tooltipRef"
       class="mc-floating-tooltip"
-      :class="{ visible: tooltip.visible }"
+      :class="{ visible: tooltip.visible, 'placement-bottom': tooltip.placement === 'bottom' }"
       :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
     >
       <div class="tooltip-title" v-html="formatMinecraftText(tooltip.title)"></div>
@@ -41,8 +66,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { withBase } from 'vitepress'
+import { formatMinecraftText } from '../utils/minecraftText'
+import { useMcTooltip } from '../utils/useMcTooltip'
 
 const tabs = ref([
   {
@@ -103,60 +130,33 @@ const tabs = ref([
   }
 ])
 
-const tooltipRef = ref<HTMLElement | null>(null)
-const tooltip = reactive({
-  visible: false,
-  x: 0,
-  y: 0,
-  title: '',
-  lore: ''
+const { tooltipRef, tooltip, isMobileView, showTooltip, hideTooltip } = useMcTooltip()
+
+const selectedIdx = ref<number | null>(null)
+const selectedTab = computed(() => (selectedIdx.value !== null ? tabs.value[selectedIdx.value] : null))
+
+watch(isMobileView, (mobile) => {
+  if (!mobile) {
+    selectedIdx.value = null
+  }
 })
 
-function showTooltip(event: MouseEvent, title: string, lore: string) {
-  tooltip.title = title
-  tooltip.lore = lore
-  tooltip.visible = true
-
-  const target = event.currentTarget as HTMLElement
-  const rect = target.getBoundingClientRect()
-  tooltip.x = rect.left + rect.width / 2
-  tooltip.y = rect.top - 8
-}
-
-function hideTooltip() {
-  tooltip.visible = false
-}
-
-function formatMinecraftText(text: string): string {
-  if (!text) return ''
-  const colorMap: Record<string, string> = {
-    '0': '#000000', '1': '#0000aa', '2': '#00aa00', '3': '#00aaaa',
-    '4': '#aa0000', '5': '#aa00aa', '6': '#ffaa00', '7': '#aaaaaa',
-    '8': '#555555', '9': '#5555ff', 'a': '#55ff55', 'b': '#55ffff',
-    'c': '#ff5555', 'd': '#ff55ff', 'e': '#ffff55', 'f': '#ffffff'
+function onTabClick(event: MouseEvent, tab: (typeof tabs.value)[number], idx: number) {
+  if (!isMobileView.value) return
+  if (selectedIdx.value !== idx) {
+    event.preventDefault()
+    selectedIdx.value = idx
+    return
   }
-
-  let formatted = text.replace(/&([0-9a-fk-or])/gi, (_, code) => {
-    const c = code.toLowerCase()
-    if (colorMap[c]) {
-      return `</span><span style="color: ${colorMap[c]}">`
-    } else if (c === 'l') {
-      return `<span style="font-weight: bold">`
-    } else if (c === 'o') {
-      return `<span style="font-style: italic">`
-    } else if (c === 'r') {
-      return `</span><span style="color: #ffffff">`
-    }
-    return ''
-  })
-
-  formatted = formatted.replace(/\n/g, '<br/>')
-  return `<span>${formatted}</span>`
+  if (!tab.link) {
+    event.preventDefault()
+  }
 }
 </script>
 
 <style scoped>
 .mc-gui-wrapper {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -164,10 +164,20 @@ function formatMinecraftText(text: string): string {
   user-select: none;
 }
 
+.mc-fg-container {
+  width: 100%;
+  max-width: 528px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .mc-fg-canvas {
   position: relative;
-  width: 528px;
-  height: 162px;
+  width: 100%;
+  max-width: 528px;
+  height: auto;
+  aspect-ratio: 176 / 54;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   image-rendering: pixelated;
@@ -193,8 +203,10 @@ function formatMinecraftText(text: string): string {
   cursor: pointer;
 }
 
-.mc-tab-slot.clickable:hover .mc-slot-highlight {
+.mc-tab-slot.selected .mc-slot-highlight {
   opacity: 1;
+  background-color: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 0 0 2px #ffaa00;
 }
 
 .mc-slot-highlight {
@@ -208,53 +220,30 @@ function formatMinecraftText(text: string): string {
 }
 
 .mc-slot-icon {
-  width: 32px;
-  height: 32px;
+  width: 80%;
+  height: 80%;
+  max-width: 32px;
+  max-height: 32px;
+  object-fit: contain;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   z-index: 1;
   transition: transform 0.1s ease;
 }
 
-.mc-tab-slot.clickable:hover .mc-slot-icon {
-  transform: scale(1.1);
+@media (hover: hover) {
+  .mc-tab-slot.clickable:hover .mc-slot-highlight {
+    opacity: 1;
+  }
+
+  .mc-tab-slot.clickable:hover .mc-slot-icon {
+    transform: scale(1.1);
+  }
 }
 
-/* Minecraft 經典 Tooltip */
-.mc-floating-tooltip {
-  position: fixed;
-  z-index: 9999;
-  pointer-events: none;
-  transform: translate(-50%, -100%);
-  background: #100010;
-  border: 2px solid;
-  border-image-slice: 1;
-  border-color: #2b0854 #18002d #18002d #2b0854;
-  box-shadow: inset 0 0 0 1px #5000ff, 0 4px 12px rgba(0,0,0,0.7);
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-family: 'Minecraft', 'Unifont', monospace, sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.1s ease;
-}
-
-.mc-floating-tooltip.visible {
-  opacity: 1;
-}
-
-.tooltip-title {
-  font-size: 14px;
-  font-weight: normal;
-  text-shadow: 2px 2px 0px #3f3f3f;
-  margin-bottom: 4px;
-}
-
-.tooltip-lore {
-  font-size: 14px;
-  line-height: 1.45;
-  text-shadow: 2px 2px 0px #3f3f3f;
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  .mc-tab-slot {
+    cursor: pointer;
+  }
 }
 </style>

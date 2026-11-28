@@ -1,150 +1,261 @@
 <template>
   <div class="mc-gui-wrapper">
-    <!-- 主視窗畫布：以官方 176x102 root.png 作為 100% 原始背景底圖 -->
-    <div
-      class="mc-gui-canvas"
-      :style="{ backgroundImage: `url(${withBase('/textures/gui/root.png')})` }"
-    >
-      <!-- 上半部：左橫幅 (營火列隊 36x36，內圖 34x34) -->
+    <div class="mc-menu-container">
+      <!-- 主視窗畫布：以官方 176x102 root.png 作為 100% 原始背景底圖 -->
       <div
-        class="mc-pos-item mc-banner-left"
-        @mouseenter="showTooltip($event, '[click] &f房間開始列隊', '[command] &8/room queue')"
-        @mouseleave="hideTooltip"
+        class="mc-gui-canvas"
+        :style="{ backgroundImage: `url(${withBase('/textures/gui/root.png')})` }"
       >
-        <div class="mc-slot-highlight"></div>
-        <img
-          :src="withBase('/textures/item/menu/root/room/stopping_on.png')"
-          alt="房間開始列隊"
-          class="mc-banner-left-img"
-        />
+        <!-- 上半部：左橫幅 (營火列隊 36x36，內圖 34x34) -->
+        <div
+          class="mc-pos-item mc-banner-left"
+          :class="{ selected: isMobileView && selectedMenuItem?.key === 'banner-left' }"
+          @mouseenter="showTooltip($event, '[click] &f房間開始列隊', '[command] &8/room queue')"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: 'banner-left',
+            icon: withBase('/textures/item/menu/root/room/stopping_on.png'),
+            rawName: '房間開始列隊',
+            title: '[click] &f房間開始列隊',
+            lore: '[command] &8/room queue'
+          })"
+        >
+          <div class="mc-slot-highlight"></div>
+          <img
+            :src="withBase('/textures/item/menu/root/room/stopping_on.png')"
+            alt="房間開始列隊"
+            class="mc-banner-left-img"
+          />
+        </div>
+
+        <!-- 上半部：中橫幅 (PARTY TIME! 90x36，內圖 88x34) -->
+        <div
+          class="mc-pos-item mc-banner-main"
+          :class="{ selected: isMobileView && selectedMenuItem?.key === 'banner-main' }"
+          @mouseenter="showTooltip($event, '&f周年快樂', '&f從地上的驚喜盒內開出道具或金幣，\n&f時間結束時將所有金幣兌換成貓幣！\n\n[click] &f切換房間模式\n[command] &8/room mode')"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: 'banner-main',
+            icon: withBase('/gui/banner-party.png'),
+            rawName: '周年快樂',
+            title: '&f周年快樂',
+            lore: '&f從地上的驚喜盒內開出道具或金幣，\n&f時間結束時將所有金幣兌換成貓幣！\n\n[click] &f切換房間模式\n[command] &8/room mode'
+          })"
+        >
+          <div class="mc-slot-highlight"></div>
+          <img
+            :src="withBase('/gui/banner-party.png')"
+            alt="PARTY TIME!"
+            class="mc-banner-main-img"
+          />
+        </div>
+
+        <!-- 中橫幅左下疊加按鈕：說明 (?) -->
+        <div
+          class="mc-pos-item mc-banner-guide"
+          :class="{ selected: isMobileView && selectedMenuItem?.key === 'banner-guide' }"
+          @mouseenter="showTooltip($event, '[click] &f查看說明', '&7查看當前遊戲模式的玩法規則與獎勵說明')"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: 'banner-guide',
+            icon: withBase('/textures/item/menu/root/room/guide.png'),
+            rawName: '查看說明',
+            title: '[click] &f查看說明',
+            lore: '&7查看當前遊戲模式的玩法規則與獎勵說明'
+          })"
+        >
+          <div class="mc-slot-highlight"></div>
+          <img
+            :src="withBase('/textures/item/menu/root/room/guide.png')"
+            alt="查看說明"
+            class="mc-slot-img"
+          />
+        </div>
+
+        <!-- 中橫幅右下疊加按鈕：編輯房間配置 (齒輪) -->
+        <div
+          class="mc-pos-item mc-banner-setup"
+          :class="{ selected: isMobileView && selectedMenuItem?.key === 'banner-setup' }"
+          @mouseenter="showTooltip($event, '[click] &f編輯房間配置', '')"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: 'banner-setup',
+            icon: withBase('/textures/item/menu/root/room/setup_on.png'),
+            rawName: '編輯房間配置',
+            title: '[click] &f編輯房間配置',
+            lore: ''
+          })"
+        >
+          <div class="mc-slot-highlight"></div>
+          <img
+            :src="withBase('/textures/item/menu/root/room/setup_on.png')"
+            alt="編輯房間配置"
+            class="mc-slot-img"
+          />
+        </div>
+
+        <!-- 上半部：右側 2x2 頭像與陪玩區 -->
+        <div
+          class="mc-pos-item mc-head head-0"
+          :class="{ selected: isMobileView && selectedMenuItem?.key === 'head-0' }"
+          @mouseenter="showTooltip($event, '&f當前玩家', '&7房主\n\n[click] &f顯示玩家狀態')"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: 'head-0',
+            icon: withBase('/gui/head-player.png'),
+            rawName: '當前玩家',
+            title: '&f當前玩家',
+            lore: '&7房主\n\n[click] &f顯示玩家狀態'
+          })"
+        >
+          <div class="mc-slot-highlight"></div>
+          <img
+            :src="withBase('/gui/head-player.png')"
+            alt="當前玩家"
+            class="mc-slot-img"
+          />
+        </div>
+
+        <div
+          class="mc-pos-item mc-head head-1"
+          :class="{ selected: isMobileView && selectedMenuItem?.key === 'head-1' }"
+          @mouseenter="showTooltip($event, '&7邀請玩家加入房間', '[click] &f邀請玩家加入房間\n[command] &8/room invite')"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: 'head-1',
+            rawName: '邀請玩家加入房間',
+            title: '&7邀請玩家加入房間',
+            lore: '[click] &f邀請玩家加入房間\n[command] &8/room invite'
+          })"
+        >
+          <div class="mc-slot-highlight"></div>
+        </div>
+
+        <!-- 右下雙格合併：陪玩（測試中）(36x18) -->
+        <div
+          class="mc-pos-item mc-companion"
+          :class="{ selected: isMobileView && selectedMenuItem?.key === 'companion' }"
+          @mouseenter="showTooltip($event, '&f陪玩（測試中）', '&f找老玩家陪你玩，或去陪剛來的新玩家\n[warning] &f陪玩期間的聊天與操作會被記錄\n\n[click] &f開啟選單\n[command] &8/companion')"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: 'companion',
+            icon: withBase('/gui/companion.png'),
+            rawName: '陪玩（測試中）',
+            title: '&f陪玩（測試中）',
+            lore: '&f找老玩家陪你玩，或去陪剛來的新玩家\n[warning] &f陪玩期間的聊天與操作會被記錄\n\n[click] &f開啟選單\n[command] &8/companion'
+          })"
+        >
+          <div class="mc-slot-highlight"></div>
+          <img
+            :src="withBase('/gui/companion.png')"
+            alt="陪玩（測試中）"
+            class="mc-pixel-img"
+          />
+        </div>
+
+        <!-- 中間：9 格核心物品欄 (y: 53px, 每格 18x18) -->
+        <component
+          :is="slot.link ? 'a' : 'div'"
+          v-for="(slot, idx) in slots"
+          :key="idx"
+          :href="slot.link ? withBase(slot.link) : undefined"
+          class="mc-pos-item mc-slot-item"
+          :class="{
+            'is-circle': idx === 0,
+            selected: isMobileView && selectedMenuItem?.key === `slot-${idx}`
+          }"
+          :style="{ left: ((7 + idx * 18) / 176 * 100) + '%' }"
+          @mouseenter="showTooltip($event, slot.name, slot.lore)"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: `slot-${idx}`,
+            icon: slot.icon,
+            rawName: slot.rawName,
+            title: slot.name,
+            lore: slot.lore,
+            link: slot.link
+          })"
+        >
+          <div class="mc-slot-highlight"></div>
+          <img :src="slot.icon" :alt="slot.rawName" class="mc-slot-img" />
+        </component>
+
+        <!-- 底部：9 格資訊與快捷按鈕列 (y: 75px, 每格 18x18) -->
+        <component
+          :is="item.link ? 'a' : 'div'"
+          v-for="(item, idx) in bottomItems"
+          :key="'b-' + idx"
+          :href="item.link ? withBase(item.link) : undefined"
+          class="mc-pos-item mc-bottom-item"
+          :class="{ selected: isMobileView && selectedMenuItem?.key === `bottom-${idx}` }"
+          :style="{ left: ((7 + idx * 18) / 176 * 100) + '%' }"
+          @mouseenter="showTooltip($event, item.name, item.lore)"
+          @mouseleave="hideTooltip"
+          @click="onMenuItemClick($event, {
+            key: `bottom-${idx}`,
+            icon: item.icon,
+            rawName: item.rawName,
+            title: item.name,
+            lore: item.lore,
+            link: item.link
+          })"
+        >
+          <div class="mc-slot-highlight round"></div>
+          <img :src="item.icon" :alt="item.rawName" class="mc-bottom-img" />
+        </component>
       </div>
 
-      <!-- 上半部：中橫幅 (PARTY TIME! 90x36，內圖 88x34) -->
-      <div
-        class="mc-pos-item mc-banner-main"
-        @mouseenter="showTooltip($event, '&f周年快樂', '&f從地上的驚喜盒內開出道具或金幣，\n&f時間結束時將所有金幣兌換成貓幣！\n\n[click] &f切換房間模式\n[command] &8/room mode')"
-        @mouseleave="hideTooltip"
-      >
-        <div class="mc-slot-highlight"></div>
-        <img
-          :src="withBase('/gui/banner-party.png')"
-          alt="PARTY TIME!"
-          class="mc-banner-main-img"
-        />
+      <!-- 手機版點擊詳情卡 / 操作提示 -->
+      <div v-if="isMobileView && selectedMenuItem" class="mc-mobile-detail-card">
+        <div class="mc-detail-header">
+          <img
+            v-if="selectedMenuItem.icon"
+            :src="selectedMenuItem.icon"
+            :alt="selectedMenuItem.rawName"
+            class="mc-detail-icon"
+          />
+          <div class="mc-detail-title" v-html="formatMenuText(selectedMenuItem.title)"></div>
+          <button type="button" class="mc-detail-close" aria-label="關閉詳情" @click="selectedMenuItem = null">✕</button>
+        </div>
+        <div v-if="selectedMenuItem.lore" class="mc-detail-lore" v-html="formatMenuText(selectedMenuItem.lore)"></div>
+        <div v-if="selectedMenuItem.link" class="mc-detail-actions">
+          <a :href="withBase(selectedMenuItem.link)" class="mc-detail-action">
+            前往 {{ selectedMenuItem.rawName }} →
+          </a>
+        </div>
       </div>
-
-      <!-- 中橫幅左下疊加按鈕：說明 (?) -->
-      <div
-        class="mc-pos-item mc-banner-guide"
-        @mouseenter="showTooltip($event, '[click] &f查看說明', '&7查看當前遊戲模式的玩法規則與獎勵說明')"
-        @mouseleave="hideTooltip"
-      >
-        <div class="mc-slot-highlight"></div>
-        <img
-          :src="withBase('/textures/item/menu/root/room/guide.png')"
-          alt="查看說明"
-          class="mc-slot-img"
-        />
+      <div v-else-if="isMobileView" class="mc-mobile-hint">
+        點擊選單項目查看功能說明
       </div>
-
-      <!-- 中橫幅右下疊加按鈕：編輯房間配置 (齒輪) -->
-      <div
-        class="mc-pos-item mc-banner-setup"
-        @mouseenter="showTooltip($event, '[click] &f編輯房間配置', '')"
-        @mouseleave="hideTooltip"
-      >
-        <div class="mc-slot-highlight"></div>
-        <img
-          :src="withBase('/textures/item/menu/root/room/setup_on.png')"
-          alt="編輯房間配置"
-          class="mc-slot-img"
-        />
-      </div>
-
-      <!-- 上半部：右側 2x2 頭像與陪玩區 -->
-      <div
-        class="mc-pos-item mc-head head-0"
-        @mouseenter="showTooltip($event, '&f當前玩家', '&7房主\n\n[click] &f顯示玩家狀態')"
-        @mouseleave="hideTooltip"
-      >
-        <div class="mc-slot-highlight"></div>
-        <img
-          :src="withBase('/gui/head-player.png')"
-          alt="當前玩家"
-          class="mc-slot-img"
-        />
-      </div>
-
-      <div
-        class="mc-pos-item mc-head head-1"
-        @mouseenter="showTooltip($event, '&7邀請玩家加入房間', '[click] &f邀請玩家加入房間\n[command] &8/room invite')"
-        @mouseleave="hideTooltip"
-      >
-        <div class="mc-slot-highlight"></div>
-      </div>
-
-      <!-- 右下雙格合併：陪玩（測試中）(36x18) -->
-      <div
-        class="mc-pos-item mc-companion"
-        @mouseenter="showTooltip($event, '&f陪玩（測試中）', '&f找老玩家陪你玩，或去陪剛來的新玩家\n[warning] &f陪玩期間的聊天與操作會被記錄\n\n[click] &f開啟選單\n[command] &8/companion')"
-        @mouseleave="hideTooltip"
-      >
-        <div class="mc-slot-highlight"></div>
-        <img
-          :src="withBase('/gui/companion.png')"
-          alt="陪玩（測試中）"
-          class="mc-pixel-img"
-        />
-      </div>
-
-      <!-- 中間：9 格核心物品欄 (y: 53px, 每格 18x18) -->
-      <component
-        :is="slot.link ? 'a' : 'div'"
-        v-for="(slot, idx) in slots"
-        :key="idx"
-        :href="slot.link ? withBase(slot.link) : undefined"
-        class="mc-pos-item mc-slot-item"
-        :class="{ 'is-circle': idx === 0 }"
-        :style="{ left: ((7 + idx * 18) / 176 * 100) + '%' }"
-        @mouseenter="showTooltip($event, slot.name, slot.lore)"
-        @mouseleave="hideTooltip"
-      >
-        <div class="mc-slot-highlight"></div>
-        <img :src="slot.icon" :alt="slot.rawName" class="mc-slot-img" />
-      </component>
-
-      <!-- 底部：9 格資訊與快捷按鈕列 (y: 75px, 每格 18x18) -->
-      <component
-        :is="item.link ? 'a' : 'div'"
-        v-for="(item, idx) in bottomItems"
-        :key="'b-' + idx"
-        :href="item.link ? withBase(item.link) : undefined"
-        class="mc-pos-item mc-bottom-item"
-        :style="{ left: ((7 + idx * 18) / 176 * 100) + '%' }"
-        @mouseenter="showTooltip($event, item.name, item.lore)"
-        @mouseleave="hideTooltip"
-      >
-        <div class="mc-slot-highlight round"></div>
-        <img :src="item.icon" :alt="item.rawName" class="mc-bottom-img" />
-      </component>
     </div>
 
     <!-- Minecraft 經典黑紫 Tooltip 懸浮窗 -->
     <div
       ref="tooltipRef"
       class="mc-floating-tooltip"
-      :class="{ visible: tooltip.visible }"
+      :class="{ visible: tooltip.visible, 'placement-bottom': tooltip.placement === 'bottom' }"
       :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
     >
-      <div class="tooltip-title" v-html="formatMinecraftText(tooltip.title)"></div>
-      <div v-if="tooltip.lore" class="tooltip-lore" v-html="formatMinecraftText(tooltip.lore)"></div>
+      <div class="tooltip-title" v-html="formatMenuText(tooltip.title)"></div>
+      <div v-if="tooltip.lore" class="tooltip-lore" v-html="formatMenuText(tooltip.lore)"></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, watch } from 'vue'
 import { withBase } from 'vitepress'
+import { formatMinecraftText, type InlineEmojiEntry } from '../utils/minecraftText'
+import { useMcTooltip } from '../utils/useMcTooltip'
+
+interface SelectedMenuItem {
+  key: string
+  icon?: string
+  rawName: string
+  title: string
+  lore: string
+  link?: string
+}
 
 // 核心 9 格物品欄設定（依據遊戲內實際材質與 Tooltip）
 const slots = ref([
@@ -281,7 +392,7 @@ const bottomItems = ref([
 ])
 
 // 內嵌官方像素 Emoji 對應表
-const inlineEmojiMap: Record<string, { src: string; alt: string }> = {
+const inlineEmojiMap: Record<string, InlineEmojiEntry> = {
   click: { src: withBase('/textures/emoji/click.png'), alt: '點擊' },
   command: { src: withBase('/textures/emoji/command.png'), alt: '指令' },
   warning: { src: withBase('/textures/emoji/warning.png'), alt: '警告' },
@@ -289,85 +400,35 @@ const inlineEmojiMap: Record<string, { src: string; alt: string }> = {
   shutdown: { src: withBase('/textures/emoji/shutdown.png'), alt: '離線' }
 }
 
-// Tooltip 懸浮窗邏輯
-const tooltipRef = ref<HTMLElement | null>(null)
-const tooltip = reactive({
-  visible: false,
-  x: 0,
-  y: 0,
-  title: '',
-  lore: ''
+const { tooltipRef, tooltip, isMobileView, showTooltip, hideTooltip } = useMcTooltip()
+const selectedMenuItem = ref<SelectedMenuItem | null>(null)
+
+watch(isMobileView, (mobile) => {
+  if (!mobile) {
+    selectedMenuItem.value = null
+  }
 })
 
-function showTooltip(event: MouseEvent, title: string, lore: string) {
-  tooltip.title = title
-  tooltip.lore = lore
-  tooltip.visible = true
-
-  const target = event.currentTarget as HTMLElement
-  const rect = target.getBoundingClientRect()
-  const rawX = rect.left + rect.width / 2
-  const padding = 190
-  const maxW = typeof window !== 'undefined' ? window.innerWidth : 1200
-  tooltip.x = Math.min(Math.max(rawX, padding), maxW - padding)
-  tooltip.y = rect.top - 8
+function formatMenuText(text: string): string {
+  return formatMinecraftText(text, inlineEmojiMap)
 }
 
-function hideTooltip() {
-  tooltip.visible = false
-}
-
-// Minecraft 顏色代碼與內嵌 Emoji 解析
-function formatMinecraftText(text: string): string {
-  if (!text) return ''
-  const colorMap: Record<string, string> = {
-    '0': '#000000', '1': '#0000aa', '2': '#00aa00', '3': '#00aaaa',
-    '4': '#aa0000', '5': '#aa00aa', '6': '#ffaa00', '7': '#aaaaaa',
-    '8': '#555555', '9': '#5555ff', 'a': '#55ff55', 'b': '#55ffff',
-    'c': '#ff5555', 'd': '#ff55ff', 'e': '#ffff55', 'f': '#ffffff'
+function onMenuItemClick(event: MouseEvent, item: SelectedMenuItem) {
+  if (!isMobileView.value) return
+  if (selectedMenuItem.value?.key !== item.key) {
+    event.preventDefault()
+    selectedMenuItem.value = item
+    return
   }
-
-  let escaped = text
-    .replace(/&(?![0-9a-fk-or])/gi, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-
-  let openSpan = false
-  escaped = escaped.replace(/&([0-9a-fk-or])/gi, (_, code) => {
-    const c = code.toLowerCase()
-    const prefix = openSpan ? '</span>' : ''
-    if (colorMap[c]) {
-      openSpan = true
-      return `${prefix}<span style="color: ${colorMap[c]}">`
-    } else if (c === 'l') {
-      openSpan = true
-      return `${prefix}<span style="font-weight: bold">`
-    } else if (c === 'o') {
-      openSpan = true
-      return `${prefix}<span style="font-style: italic">`
-    } else if (c === 'r') {
-      openSpan = true
-      return `${prefix}<span style="color: #ffffff">`
-    }
-    return ''
-  })
-
-  if (openSpan) {
-    escaped += '</span>'
+  if (!item.link) {
+    event.preventDefault()
   }
-
-  escaped = escaped.replace(/\[(click|command|warning|copper_rank|shutdown)\]/g, (_, key) => {
-    const emoji = inlineEmojiMap[key]
-    return `<img src="${emoji.src}" alt="${emoji.alt}" class="mc-inline-emoji" />`
-  })
-
-  escaped = escaped.replace(/\n/g, '<br/>')
-  return `<span style="color: #ffffff">${escaped}</span>`
 }
 </script>
 
 <style scoped>
 .mc-gui-wrapper {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -375,12 +436,20 @@ function formatMinecraftText(text: string): string {
   user-select: none;
 }
 
+.mc-menu-container {
+  width: 100%;
+  max-width: 528px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* 核心畫布：使用 176x102 官方材質，以 3 倍像素比 (528x306) 精準呈現 */
 .mc-gui-canvas {
   position: relative;
-  width: 528px;
-  height: 306px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 528px;
+  height: auto;
   aspect-ratio: 176 / 102;
   background-size: 100% 100%;
   background-repeat: no-repeat;
@@ -499,14 +568,29 @@ function formatMinecraftText(text: string): string {
   transition: background-color 0.08s ease;
 }
 
-.mc-slot-item:hover .mc-slot-highlight,
-.mc-banner-left:hover .mc-slot-highlight,
-.mc-banner-main:hover .mc-slot-highlight,
-.mc-banner-guide:hover .mc-slot-highlight,
-.mc-banner-setup:hover .mc-slot-highlight,
-.mc-head:hover .mc-slot-highlight,
-.mc-companion:hover .mc-slot-highlight {
-  background-color: rgba(255, 255, 255, 0.32);
+.mc-pos-item.selected .mc-slot-highlight {
+  background-color: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 0 0 2px #ffaa00;
+}
+
+.mc-slot-item.is-circle.selected .mc-slot-highlight {
+  border-radius: 50%;
+}
+
+.mc-bottom-item.selected .mc-slot-highlight {
+  border-radius: 3px;
+}
+
+@media (hover: hover) {
+  .mc-slot-item:hover .mc-slot-highlight,
+  .mc-banner-left:hover .mc-slot-highlight,
+  .mc-banner-main:hover .mc-slot-highlight,
+  .mc-banner-guide:hover .mc-slot-highlight,
+  .mc-banner-setup:hover .mc-slot-highlight,
+  .mc-head:hover .mc-slot-highlight,
+  .mc-companion:hover .mc-slot-highlight {
+    background-color: rgba(255, 255, 255, 0.32);
+  }
 }
 
 .mc-slot-item.is-circle .mc-slot-highlight {
@@ -530,9 +614,11 @@ function formatMinecraftText(text: string): string {
   height: calc(18 / 102 * 100%);
 }
 
-.mc-bottom-item:hover .mc-slot-highlight {
-  background-color: rgba(255, 255, 255, 0.25);
-  border-radius: 3px;
+@media (hover: hover) {
+  .mc-bottom-item:hover .mc-slot-highlight {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+  }
 }
 
 .mc-bottom-img {
@@ -543,56 +629,5 @@ function formatMinecraftText(text: string): string {
   image-rendering: crisp-edges;
   object-fit: contain;
   display: block;
-}
-
-/* Minecraft 經典黑紫 Tooltip */
-.mc-floating-tooltip {
-  position: fixed;
-  z-index: 9999;
-  pointer-events: none;
-  background-color: rgba(16, 0, 16, 0.95);
-  padding: 6px 10px;
-  border-radius: 3px;
-  border: 2px solid #2b0854;
-  box-shadow: inset 0 0 0 1px #5000ff,
-              0 0 0 2px #100010,
-              0 6px 16px rgba(0, 0, 0, 0.75);
-  font-family: 'Minecraft', 'Noto Sans TC', 'Microsoft JhengHei', monospace;
-  white-space: pre-wrap;
-  min-width: 140px;
-  max-width: 380px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translate(-50%, -100%);
-  transition: opacity 0.08s ease;
-}
-
-.mc-floating-tooltip.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-.tooltip-title {
-  font-size: 14px;
-  font-weight: normal;
-  line-height: 1.35;
-  text-shadow: 2px 2px 0 #3f3f3f;
-}
-
-.tooltip-lore {
-  font-size: 14px;
-  line-height: 1.45;
-  margin-top: 4px;
-  text-shadow: 2px 2px 0 #3f3f3f;
-}
-
-:deep(.mc-inline-emoji) {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  vertical-align: -2px;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  margin-right: 3px;
 }
 </style>
